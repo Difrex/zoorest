@@ -50,6 +50,17 @@ func (zk ZooNode) LS(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+// RM ...
+func (zk ZooNode) RM(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	path := vars["path"]
+
+	go func() { zk.RMR(path) }()
+
+	w.WriteHeader(200)
+	// w.Write(data)
+}
+
 // GET ...
 func (zk ZooNode) GET(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -83,6 +94,7 @@ func Serve(listen string, zk ZooNode) {
 
 	r.HandleFunc("/v1/ls{path:[a-z0-9-_/.:]+}", zk.LS)
 	r.HandleFunc("/v1/get{path:[a-z0-9-_/.:]+}", zk.GET)
+	r.HandleFunc("/v1/rmr{path:[a-z0-9-_/.:]+}", zk.RM)
 
 	http.Handle("/", r)
 
