@@ -13,14 +13,14 @@ type Ls struct {
 	Childrens []string `json:"childrens"`
 	Path      string   `json:"path"`
 	State     string   `json:"state"`
-	Error     error    `json:"error"`
+	Error     string   `json:"error"`
 }
 
 // Get ...
 type Get struct {
 	Path  string `json:"path"`
 	State string `json:"state"`
-	Error error  `json:"error"`
+	Error string `json:"error"`
 	Data  []byte `json:"data"`
 }
 
@@ -34,11 +34,18 @@ func (zk ZooNode) LS(w http.ResponseWriter, r *http.Request) {
 	go func() { ch <- zk.GetChildrens(path) }()
 
 	childrens := <-ch
-
 	data, err := json.Marshal(childrens)
 	if err != nil {
 		w.WriteHeader(500)
+		w.Write([]byte("JSON parsing failure"))
+		return
 	}
+	if childrens.Error != "" {
+		w.WriteHeader(500)
+		w.Write(data)
+		return
+	}
+
 	w.WriteHeader(200)
 	w.Write(data)
 }
@@ -53,11 +60,19 @@ func (zk ZooNode) GET(w http.ResponseWriter, r *http.Request) {
 	go func() { ch <- zk.GetNode(path) }()
 
 	childrens := <-ch
-
 	data, err := json.Marshal(childrens)
 	if err != nil {
 		w.WriteHeader(500)
+		w.Write([]byte("JSON parsing failure"))
+		return
 	}
+
+	if childrens.Error != "" {
+		w.WriteHeader(500)
+		w.Write(data)
+		return
+	}
+
 	w.WriteHeader(200)
 	w.Write(data)
 }

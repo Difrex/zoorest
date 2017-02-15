@@ -51,11 +51,11 @@ func (z ZooNode) GetChildrens(path string) Ls {
 	childrens, _, err := z.Conn.Children(lsPath)
 	if err != nil {
 		l.State = "ERROR"
-		l.Error = err
+		l.Error = err.Error()
 		return l
 	}
 
-	l.Error = nil
+	l.Error = ""
 	l.Childrens = childrens
 	l.Path = lsPath
 
@@ -74,7 +74,7 @@ func (z ZooNode) GetNode(path string) Get {
 		getPath = strings.Replace(getPath, "//", "/", 1)
 	}
 
-	log.Print("ls: ", getPath)
+	log.Print("get: ", getPath)
 
 	var g Get
 	g.State = "OK"
@@ -82,11 +82,11 @@ func (z ZooNode) GetNode(path string) Get {
 	data, _, err := z.Conn.Get(getPath)
 	if err != nil {
 		g.State = "ERROR"
-		g.Error = err
+		g.Error = err.Error()
 		return g
 	}
 
-	g.Error = nil
+	g.Error = ""
 	g.Data = data
 	g.Path = getPath
 
