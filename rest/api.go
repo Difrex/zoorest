@@ -28,6 +28,12 @@ type Get struct {
 
 // LS ...
 func (zk ZooNode) LS(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		e := strings.Join([]string{"Method", r.Method, "not alowed"}, " ")
+		w.WriteHeader(500)
+		w.Write([]byte(e))
+		return
+	}
 	vars := mux.Vars(r)
 	path := vars["path"]
 
@@ -82,7 +88,7 @@ func (zk ZooNode) UP(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "POST" {
 		go func() { ch <- zk.UpdateNode(path, content) }()
 	} else {
-		e := strings.Join([]string{r.Method, "not alowed"}, " ")
+		e := strings.Join([]string{"Method", r.Method, "not alowed"}, " ")
 		w.WriteHeader(500)
 		w.Write([]byte(e))
 		return
@@ -97,8 +103,8 @@ func (zk ZooNode) UP(w http.ResponseWriter, r *http.Request) {
 
 // RM ...
 func (zk ZooNode) RM(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		e := strings.Join([]string{r.Method, "not alowed"}, " ")
+	if r.Method != "DELETE" {
+		e := strings.Join([]string{"Method", r.Method, "not alowed"}, " ")
 		w.WriteHeader(500)
 		w.Write([]byte(e))
 		return
@@ -106,13 +112,33 @@ func (zk ZooNode) RM(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	path := vars["path"]
 
-	go func() { zk.RMR(path) }()
+	var rmPath string
+	rmPath = strings.Join([]string{zk.Path, path}, "")
+	if path == "/" {
+		e := "Skiping root path"
+		w.WriteHeader(500)
+		w.Write([]byte(e))
+		return
+	}
+
+	if strings.Contains(rmPath, "//") {
+		rmPath = strings.Replace(rmPath, "//", "/", 1)
+	}
+
+	go func() { zk.RMR(rmPath) }()
 
 	w.WriteHeader(200)
+	w.Write([]byte(rmPath))
 }
 
 // GET ...
 func (zk ZooNode) GET(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		e := strings.Join([]string{"Method", r.Method, "not alowed"}, " ")
+		w.WriteHeader(500)
+		w.Write([]byte(e))
+		return
+	}
 	vars := mux.Vars(r)
 	path := vars["path"]
 

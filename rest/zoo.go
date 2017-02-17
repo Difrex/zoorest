@@ -95,25 +95,15 @@ func (z ZooNode) GetNode(path string) Get {
 
 //RMR remove Zk node recursive
 func (z ZooNode) RMR(path string) {
-	var rmPath string
-	rmPath = strings.Join([]string{z.Path, path}, "")
-	if path == "/" {
-		return
-	}
-
-	if strings.Contains(rmPath, "//") {
-		rmPath = strings.Replace(rmPath, "//", "/", 1)
-	}
-
-	log.Print("rm: ", rmPath)
-	c, _, err := z.Conn.Children(rmPath)
+	log.Print("rm: ", path)
+	c, _, err := z.Conn.Children(path)
 	if err != nil {
 		log.Print("[zk ERROR] ", err)
 	}
 	log.Print("[WARNING] Trying delete ", path)
 	if len(c) > 0 {
 		for _, child := range c {
-			childPath := strings.Join([]string{rmPath, child}, "/")
+			childPath := strings.Join([]string{path, child}, "/")
 			z.RMR(childPath)
 		}
 	}
