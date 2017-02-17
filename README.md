@@ -1,4 +1,5 @@
 # Zoorest 
+[![Build Status](https://travis-ci.org/Difrex/zoorest.svg?branch=master)](https://travis-ci.org/Difrex/zoorest)
 
 Zookeeper HTTP rest API
 
