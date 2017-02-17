@@ -1,0 +1,8 @@
+language: go
+go:
+  - 1.6
+  - 1.7
+
+# tests script
+script:
+  - cd $GOPATH/src/github.com/Difrex/zoorest && go build
