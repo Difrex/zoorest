@@ -2,6 +2,32 @@
 
 Zookeeper HTTP rest API
 
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
+**Table of Contents**
+
+- [Zoorest](#zoorest)
+    - [Usage](#usage)
+    - [API](#api)
+        - [List node childrens](#list-node-childrens)
+            - [Errors](#errors)
+        - [Get node data](#get-node-data)
+            - [Errors](#errors)
+        - [Create node recursive](#create-node-recursive)
+        - [Update node](#update-node)
+            - [Errors](#errors)
+        - [Delete node recursive](#delete-node-recursive)
+            - [Errors](#errors)
+    - [Build](#build)
+        - [Binary](#binary)
+        - [Docker build](#docker-build)
+            - [Binary file](#binary-file)
+            - [Docker image](#docker-image)
+- [AUTHORS](#authors)
+- [LICENSE](#license)
+
+<!-- markdown-toc end -->
+
+
 ## Usage
 
 ```
