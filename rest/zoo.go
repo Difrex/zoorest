@@ -123,3 +123,63 @@ func (z ZooNode) RMR(path string) {
 	}
 	log.Print("[WARNING] ", path, " deleted")
 }
+
+// CreateNode ...
+func (z ZooNode) CreateNode(path string, content []byte) string {
+	createPath := strings.Join([]string{z.Path, path}, "")
+	if strings.Contains(createPath, "//") {
+		createPath = strings.Replace(createPath, "//", "/", 1)
+	}
+	if path == "/" {
+		return "ERROR: Not creating root path\n"
+	}
+	log.Print("Creating ", createPath)
+	_, err := z.EnsureZooPath(createPath)
+	if err != nil {
+		return err.Error()
+	}
+
+	return z.UpdateNode(path, content)
+}
+
+// UpdateNode ...
+func (z ZooNode) UpdateNode(path string, content []byte) string {
+	upPath := strings.Join([]string{z.Path, path}, "")
+	if strings.Contains(upPath, "//") {
+		upPath = strings.Replace(upPath, "//", "/", 1)
+	}
+	if upPath == "/" {
+		return "Not updating root path"
+	}
+
+	_, err := z.Conn.Set(upPath, content, -1)
+	if err != nil {
+		return err.Error()
+	}
+
+	return upPath
+}
+
+//EnsureZooPath create zookeeper path
+func (z ZooNode) EnsureZooPath(path string) (string, error) {
+	flag := int32(0)
+	acl := zk.WorldACL(zk.PermAll)
+
+	s := strings.Split(path, "/")
+	var p []string
+	var fullnodepath string
+
+	for i := 1; i < len(s); i++ {
+		p = append(p, strings.Join([]string{"/", s[i]}, ""))
+	}
+
+	for i := 0; i < len(p); i++ {
+		fullnodepath = strings.Join([]string{fullnodepath, p[i]}, "")
+		exists, _, _ := z.Conn.Exists(fullnodepath)
+		if !exists {
+			z.Conn.Create(fullnodepath, []byte(""), flag, acl)
+		}
+	}
+
+	return fullnodepath, nil
+}
