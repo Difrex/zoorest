@@ -3,6 +3,7 @@ package rest
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/samuel/go-zookeeper/zk"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,14 +17,16 @@ type Ls struct {
 	Path      string   `json:"path"`
 	State     string   `json:"state"`
 	Error     string   `json:"error"`
+	ZkStat    *zk.Stat `json:"zkstat"`
 }
 
 // Get ...
 type Get struct {
-	Path  string `json:"path"`
-	State string `json:"state"`
-	Error string `json:"error"`
-	Data  []byte `json:"data"`
+	Path   string   `json:"path"`
+	State  string   `json:"state"`
+	Error  string   `json:"error"`
+	ZkStat *zk.Stat `json:"zkstat"`
+	Data   []byte   `json:"data"`
 }
 
 // LS ...
