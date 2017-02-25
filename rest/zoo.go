@@ -57,7 +57,7 @@ func (z ZooNode) GetChildrens(path string) Ls {
 
 	l.Error = ""
 	l.Childrens = childrens
-	l.Path = lsPath
+	l.Path = path
 	l.ZkStat = zkStat
 
 	return l
@@ -89,7 +89,7 @@ func (z ZooNode) GetNode(path string) Get {
 
 	g.Error = ""
 	g.Data = data
-	g.Path = getPath
+	g.Path = path
 	g.ZkStat = zkStat
 
 	return g
@@ -149,7 +149,7 @@ func (z ZooNode) UpdateNode(path string, content []byte) string {
 		return err.Error()
 	}
 
-	return upPath
+	return path
 }
 
 //EnsureZooPath create zookeeper path
@@ -173,5 +173,5 @@ func (z ZooNode) EnsureZooPath(path string) (string, error) {
 		}
 	}
 
-	return fullnodepath, nil
+	return path, nil
 }
