@@ -18,7 +18,7 @@ EOF
 # Build builder
 docker build -t zoorest_builder -f Dockerfile.builder .
 # Build bin
-docker run -ti -v $(pwd)/out:/out zoorest_builder
+docker run -v $(pwd)/out:/out zoorest_builder
 
 case $1 in alpine)
                docker build -t zoorest -f Dockerfile .
