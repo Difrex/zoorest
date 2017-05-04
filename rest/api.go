@@ -131,7 +131,7 @@ func (zk ZooNode) RM(w http.ResponseWriter, r *http.Request) {
 	go func() { zk.RMR(rmPath) }()
 
 	w.WriteHeader(200)
-	w.Write([]byte(rmPath))
+	w.Write([]byte(path))
 }
 
 // GET ...

@@ -31,7 +31,7 @@ func (conf Zk) InitConnection() (*zk.Conn, error) {
 	return conn, err
 }
 
-// GetChildrens ...
+// GetChildrens get Zookeeper node childrens
 func (z ZooNode) GetChildrens(path string) Ls {
 	var lsPath string
 	lsPath = strings.Join([]string{z.Path, path}, "")
