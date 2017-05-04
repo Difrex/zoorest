@@ -90,6 +90,8 @@ func (zk ZooNode) UP(w http.ResponseWriter, r *http.Request) {
 		go func() { ch <- zk.CreateNode(path, content) }()
 	} else if r.Method == "POST" {
 		go func() { ch <- zk.UpdateNode(path, content) }()
+	} else if r.Method == "PATCH" {
+		go func() { ch <- zk.CreateChild(path, content) }()
 	} else {
 		e := strings.Join([]string{"Method", r.Method, "not alowed"}, " ")
 		w.WriteHeader(500)
@@ -115,14 +117,15 @@ func (zk ZooNode) RM(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	path := vars["path"]
 
-	var rmPath string
-	rmPath = strings.Join([]string{zk.Path, path}, "")
 	if path == "/" {
 		e := "Skiping root path"
 		w.WriteHeader(500)
 		w.Write([]byte(e))
 		return
 	}
+
+	var rmPath string
+	rmPath = strings.Join([]string{zk.Path, path}, "")
 
 	if strings.Contains(rmPath, "//") {
 		rmPath = strings.Replace(rmPath, "//", "/", 1)
@@ -171,10 +174,10 @@ func (zk ZooNode) GET(w http.ResponseWriter, r *http.Request) {
 func Serve(listen string, zk ZooNode) {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/v1/ls{path:[a-z0-9-_/.:]+}", zk.LS)
-	r.HandleFunc("/v1/get{path:[a-z0-9-_/.:]+}", zk.GET)
-	r.HandleFunc("/v1/rmr{path:[a-z0-9-_/.:]+}", zk.RM)
-	r.HandleFunc("/v1/up{path:[a-z0-9-_/.:]+}", zk.UP)
+	r.HandleFunc("/v1/ls{path:[A-Za-z0-9-_/.:]+}", zk.LS)
+	r.HandleFunc("/v1/get{path:[A-Za-z0-9-_/.:]+}", zk.GET)
+	r.HandleFunc("/v1/rmr{path:[A-Za-z0-9-_/.:]+}", zk.RM)
+	r.HandleFunc("/v1/up{path:[A-Za-z0-9-_/.:]+}", zk.UP)
 
 	http.Handle("/", r)
 

@@ -14,6 +14,8 @@ Zookeeper HTTP rest API
         - [Get node data](#get-node-data)
             - [Errors](#errors)
         - [Create node recursive](#create-node-recursive)
+        - [Create node children](#create-node-children)
+            - [Errors](#errors)
         - [Update node](#update-node)
             - [Errors](#errors)
         - [Delete node recursive](#delete-node-recursive)
@@ -22,7 +24,6 @@ Zookeeper HTTP rest API
         - [Binary](#binary)
         - [Docker build](#docker-build)
             - [Binary file](#binary-file)
-            - [Docker image](#docker-image)
 - [AUTHORS](#authors)
 - [LICENSE](#license)
 
@@ -120,6 +121,25 @@ Return string with created path
 ```
 curl -XPUT http://127.0.0.1:8889/v1/up/two/three/four -d '{"four": "json"}'
 /zoorest/two/three/four
+```
+
+### Create node children
+
+Method: **PATCH**
+
+Location: **/v1/up**
+
+Return string with created children path
+```
+curl -XPATCH http://127.0.0.1:8889/v1/up/one/test -d 'test'
+/one/test
+```
+
+#### Errors
+
+```
+curl -XPATCH http://127.0.0.1:8889/v1/up/six/test -d '{"six": "json"}'
+zk: node does not exist
 ```
 
 ### Update node

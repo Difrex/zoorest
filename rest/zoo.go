@@ -134,7 +134,7 @@ func (z ZooNode) CreateNode(path string, content []byte) string {
 	return z.UpdateNode(path, content)
 }
 
-// UpdateNode ...
+// UpdateNode update existing node
 func (z ZooNode) UpdateNode(path string, content []byte) string {
 	upPath := strings.Join([]string{z.Path, path}, "")
 	if strings.Contains(upPath, "//") {
@@ -145,6 +145,24 @@ func (z ZooNode) UpdateNode(path string, content []byte) string {
 	}
 
 	_, err := z.Conn.Set(upPath, content, -1)
+	if err != nil {
+		return err.Error()
+	}
+
+	return path
+}
+
+// CreateChild create child in /node/path
+func (z ZooNode) CreateChild(path string, content []byte) string {
+	crPath := strings.Join([]string{z.Path, path}, "")
+	if strings.Contains(crPath, "//") {
+		crPath = strings.Replace(crPath, "//", "/", 1)
+	}
+	if crPath == "/" {
+		return "Not updating root path"
+	}
+
+	_, err := z.Conn.Create(crPath, content, 0, zk.WorldACL(zk.PermAll))
 	if err != nil {
 		return err.Error()
 	}
