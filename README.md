@@ -36,11 +36,19 @@ Zookeeper HTTP rest API
 Usage of ./zoorest:
   -listen string
     	Address to listen (default "127.0.0.1:8889")
+  -mc
+    	Enable memcached support
+  -mchosts string
+    	Memcached servers. Comma separated (default "127.0.0.1:11211")
+  -mcprefix string
+    	Memcached key prefix (default "zoorest")
   -path string
     	Zk root path (default "/")
   -zk string
     	Zk servers. Comma separated (default "127.0.0.1:2181")
 ```
+
+NOTE: If memcached support is enabled zkStat metrics will not be returned.
 
 ## API
 

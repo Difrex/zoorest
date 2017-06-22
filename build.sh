@@ -16,7 +16,7 @@ ENTRYPOINT go build -ldflags "-linkmode external -extldflags -static" && mv zoor
 EOF
 
 # Build builder
-docker build -t zoorest_builder -f Dockerfile.builder .
+docker build --no-cache -t zoorest_builder -f Dockerfile.builder .
 # Build bin
 docker run -v $(pwd)/out:/out zoorest_builder
 

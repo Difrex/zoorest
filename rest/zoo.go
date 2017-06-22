@@ -12,6 +12,7 @@ type ZooNode struct {
 	Path string
 	Conn *zk.Conn
 	Zoo  Zk
+	MC   MC
 }
 
 //Zk Zookeeper connection settings
@@ -43,10 +44,23 @@ func (z ZooNode) GetChildrens(path string) Ls {
 		lsPath = strings.Replace(lsPath, "//", "/", 1)
 	}
 
-	log.Print("ls: ", lsPath)
+	log.Print("V1 LS: ", lsPath)
 
 	var l Ls
 	l.State = "OK"
+	l.Path = path
+
+	if z.MC.Enabled {
+		data, err := z.MC.GetFromCache(lsPath)
+		if err != nil {
+			log.Print("V1 LS ERROR: ", err.Error())
+		} else {
+			log.Print("We are get it from memecache!")
+			childrens := strings.Split(string(data), ",")
+			l.Childrens = childrens
+			return l
+		}
+	}
 
 	childrens, zkStat, err := z.Conn.Children(lsPath)
 	if err != nil {
@@ -55,15 +69,22 @@ func (z ZooNode) GetChildrens(path string) Ls {
 		return l
 	}
 
+	// Store to cache
+	if z.MC.Enabled {
+		err := z.MC.StoreToCache(lsPath, []byte(strings.Join(childrens, ",")))
+		if err != nil {
+			log.Print("V1 LS: ", err.Error())
+		}
+	}
+
 	l.Error = ""
 	l.Childrens = childrens
-	l.Path = path
 	l.ZkStat = zkStat
 
 	return l
 }
 
-// GetNode ...
+// GetNode data
 func (z ZooNode) GetNode(path string) Get {
 	var getPath string
 	getPath = strings.Join([]string{z.Path, path}, "")
@@ -75,10 +96,21 @@ func (z ZooNode) GetNode(path string) Get {
 		getPath = strings.Replace(getPath, "//", "/", 1)
 	}
 
-	log.Print("get: ", getPath)
+	log.Print("V1 GET: ", getPath)
 
 	var g Get
 	g.State = "OK"
+	g.Path = path
+
+	// Get data from memcached
+	if z.MC.Enabled {
+		if data, err := z.MC.GetFromCache(getPath); err != nil {
+			log.Print("V1 GET: ", err.Error())
+		} else {
+			g.Data = data
+			return g
+		}
+	}
 
 	data, zkStat, err := z.Conn.Get(getPath)
 	if err != nil {
@@ -87,9 +119,16 @@ func (z ZooNode) GetNode(path string) Get {
 		return g
 	}
 
+	// Store to cache
+	if z.MC.Enabled {
+		err := z.MC.StoreToCache(getPath, data)
+		if err != nil {
+			log.Print("V1 LS: ", err.Error())
+		}
+	}
+
 	g.Error = ""
 	g.Data = data
-	g.Path = path
 	g.ZkStat = zkStat
 
 	return g
@@ -149,6 +188,12 @@ func (z ZooNode) UpdateNode(path string, content []byte) string {
 		return err.Error()
 	}
 
+	if z.MC.Enabled {
+		if err := z.MC.StoreToCache(upPath, content); err != nil {
+			log.Print("V1 update ERROR: ", err.Error())
+		}
+	}
+
 	return path
 }
 
@@ -165,6 +210,12 @@ func (z ZooNode) CreateChild(path string, content []byte) string {
 	_, err := z.Conn.Create(crPath, content, 0, zk.WorldACL(zk.PermAll))
 	if err != nil {
 		return err.Error()
+	}
+
+	if z.MC.Enabled {
+		if err := z.MC.StoreToCache(crPath, content); err != nil {
+			log.Print("V1 create ERROR: ", err.Error())
+		}
 	}
 
 	return path
