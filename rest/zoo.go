@@ -50,17 +50,17 @@ func (z ZooNode) GetChildrens(path string) Ls {
 	l.State = "OK"
 	l.Path = path
 
-	if z.MC.Enabled {
-		data, err := z.MC.GetFromCache(lsPath)
-		if err != nil {
-			log.Print("V1 LS ERROR: ", err.Error())
-		} else {
-			log.Print("We are get it from memecache!")
-			childrens := strings.Split(string(data), ",")
-			l.Childrens = childrens
-			return l
-		}
-	}
+	// if z.MC.Enabled {
+	// 	data, err := z.MC.GetFromCache(lsPath)
+	// 	if err != nil {
+	// 		log.Print("V1 LS ERROR: ", err.Error())
+	// 	} else {
+	// 		log.Print("We are get it from memecache!")
+	// 		childrens := strings.Split(string(data), ",")
+	// 		l.Childrens = childrens
+	// 		return l
+	// 	}
+	// }
 
 	childrens, zkStat, err := z.Conn.Children(lsPath)
 	if err != nil {
@@ -69,13 +69,13 @@ func (z ZooNode) GetChildrens(path string) Ls {
 		return l
 	}
 
-	// Store to cache
-	if z.MC.Enabled {
-		err := z.MC.StoreToCache(lsPath, []byte(strings.Join(childrens, ",")))
-		if err != nil {
-			log.Print("V1 LS: ", err.Error())
-		}
-	}
+	// // Store to cache
+	// if z.MC.Enabled {
+	// 	err := z.MC.StoreToCache(lsPath, []byte(strings.Join(childrens, ",")))
+	// 	if err != nil {
+	// 		log.Print("V1 LS: ", err.Error())
+	// 	}
+	// }
 
 	l.Error = ""
 	l.Childrens = childrens
@@ -105,7 +105,7 @@ func (z ZooNode) GetNode(path string) Get {
 	// Get data from memcached
 	if z.MC.Enabled {
 		if data, err := z.MC.GetFromCache(getPath); err != nil {
-			log.Print("V1 GET: ", err.Error())
+			log.Print("[mc ERROR] ", err.Error())
 		} else {
 			g.Data = data
 			return g
@@ -123,7 +123,7 @@ func (z ZooNode) GetNode(path string) Get {
 	if z.MC.Enabled {
 		err := z.MC.StoreToCache(getPath, data)
 		if err != nil {
-			log.Print("V1 LS: ", err.Error())
+			log.Print("[mc ERROR] ", err.Error())
 		}
 	}
 
@@ -151,8 +151,15 @@ func (z ZooNode) RMR(path string) {
 	err = z.Conn.Delete(path, -1)
 	if err != nil {
 		log.Print("[zk ERROR] ", err)
+	} else {
+		if z.MC.Enabled {
+			err := z.MC.DeleteFromCache(path)
+			if err != nil {
+				log.Print("[mc ERROR] ", err.Error())
+			}
+		}
+		log.Print("[WARNING] ", path, " deleted")
 	}
-	log.Print("[WARNING] ", path, " deleted")
 }
 
 // CreateNode ...
@@ -190,7 +197,7 @@ func (z ZooNode) UpdateNode(path string, content []byte) string {
 
 	if z.MC.Enabled {
 		if err := z.MC.StoreToCache(upPath, content); err != nil {
-			log.Print("V1 update ERROR: ", err.Error())
+			log.Print("[mc ERROR] ", err.Error())
 		}
 	}
 
@@ -214,7 +221,7 @@ func (z ZooNode) CreateChild(path string, content []byte) string {
 
 	if z.MC.Enabled {
 		if err := z.MC.StoreToCache(crPath, content); err != nil {
-			log.Print("V1 create ERROR: ", err.Error())
+			log.Print("[mc ERROR] ", err.Error())
 		}
 	}
 
