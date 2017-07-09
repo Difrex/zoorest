@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/samuel/go-zookeeper/zk"
 	"log"
+	"sort"
 	"strings"
 	"time"
 )
@@ -26,7 +27,7 @@ type Zk struct {
 func (conf Zk) InitConnection() (*zk.Conn, error) {
 	conn, _, err := zk.Connect(conf.Hosts, time.Second)
 	if err != nil {
-		log.Panic("[ERROR] ", err)
+		log.Fatal("[ERROR] ", err)
 	}
 
 	return conn, err
@@ -76,6 +77,9 @@ func (z ZooNode) GetChildrens(path string) Ls {
 	// 		log.Print("V1 LS: ", err.Error())
 	// 	}
 	// }
+
+	// Sort childrens alphabeticaly
+	sort.Strings(childrens)
 
 	l.Error = ""
 	l.Childrens = childrens
