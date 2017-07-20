@@ -2,7 +2,6 @@
 [![Build Status](https://travis-ci.org/Difrex/zoorest.svg?branch=master)](https://travis-ci.org/Difrex/zoorest)
 
 Zookeeper HTTP rest API
-
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
 **Table of Contents**
 
@@ -25,12 +24,12 @@ Zookeeper HTTP rest API
         - [Docker build](#docker-build)
             - [Binary file](#binary-file)
             - [Docker image](#docker-image)
+    - [Get docker image](#get-docker-image)
 - [AUTHORS](#authors)
 - [LICENSE](#license)
 - [DONATE](#donate)
 
 <!-- markdown-toc end -->
-
 
 ## Usage
 
@@ -245,6 +244,18 @@ cd zoorest
 ```
 
 Image will be tagged as zoorest:latest
+
+## Get docker image
+
+Pull image
+```
+docker pull lessmore/zoorest
+```
+
+And run it
+```
+/usr/bin/docker run -d -p 8889:8889 --name zoorest lessmore/zoorest:latest --zk zoo1:2181,zoo2:2181,zoo3:2181 --path /zoorest/jail --listen 0.0.0.0:8889 -mc -mchosts mc1:11211,mc2:11211,mc3:11211
+```
 
 # AUTHORS
 
