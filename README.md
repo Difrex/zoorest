@@ -24,8 +24,10 @@ Zookeeper HTTP rest API
         - [Binary](#binary)
         - [Docker build](#docker-build)
             - [Binary file](#binary-file)
+            - [Docker image](#docker-image)
 - [AUTHORS](#authors)
 - [LICENSE](#license)
+- [DONATE](#donate)
 
 <!-- markdown-toc end -->
 
@@ -251,3 +253,8 @@ Denis Zheleztsov <difrex.punk@gmail.com>
 # LICENSE 
 
 GPLv3 see [LICENSE](LICENSE)
+
+# DONATE
+
+BTC 1JCmZQdESKPCrcjUxDRNgt5HaSgUEWZ8pV<br>
+DASH XxEWcJgfiAav1gxTtVLGXqE5T66uMA7te7
