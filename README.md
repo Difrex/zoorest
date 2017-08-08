@@ -51,6 +51,10 @@ Usage of ./zoorest:
 
 NOTE: If memcached support is enabled zkStat metrics will not be returned.
 
+Tupical usage scheme:
+
+[![tupical usage](img/usage.png)](img/usage.png)
+
 ## API
 
 ### List node childrens
