@@ -1,8 +1,8 @@
-# Zoorest 
+# Zoorest
 [![Build Status](https://travis-ci.org/Difrex/zoorest.svg?branch=master)](https://travis-ci.org/Difrex/zoorest)
 
-Zookeeper HTTP rest API
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
+Zookeeper REST API
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
 - [Zoorest](#zoorest)
@@ -11,14 +11,16 @@ Zookeeper HTTP rest API
         - [List node childrens](#list-node-childrens)
             - [Errors](#errors)
         - [Get node data](#get-node-data)
-            - [Errors](#errors)
+            - [Errors](#errors-1)
+        - [Get node data as JSON](#get-node-data-as-json)
+            - [Errors](#errors-2)
         - [Create node recursive](#create-node-recursive)
         - [Create node children](#create-node-children)
-            - [Errors](#errors)
+            - [Errors](#errors-3)
         - [Update node](#update-node)
-            - [Errors](#errors)
+            - [Errors](#errors-4)
         - [Delete node recursive](#delete-node-recursive)
-            - [Errors](#errors)
+            - [Errors](#errors-5)
     - [Build](#build)
         - [Binary](#binary)
         - [Docker build](#docker-build)
@@ -120,6 +122,65 @@ echo eyJzb21lIjogImpzb24ifQ== | base64 -d
   "path": "",
   "state": "ERROR",
   "error": "zk: node does not exist",
+  "data": null
+}
+```
+
+### Get node data as JSON
+
+Method: **GET**
+
+Location: **/v1/get/path/to/node+json**
+
+Simple add to the end of the path `+json`
+Return JSON
+```
+curl -s -XGET http://127.0.0.1:8889/v1/json/one/data+json | jq
+{
+  "path": "/json/one/data",
+  "state": "OK",
+  "error": "",
+  "zkstat": {
+    "Czxid": 45,
+    "Mzxid": 55,
+    "Ctime": 1564645641612,
+    "Mtime": 1564646317882,
+    "Version": 6,
+    "Cversion": 0,
+    "Aversion": 0,
+    "EphemeralOwner": 0,
+    "DataLength": 28,
+    "NumChildren": 0,
+    "Pzxid": 45
+  },
+  "data": {
+    "ok": true,
+    "some": "data"
+  }
+}
+```
+
+#### Errors
+
+```json
+curl -s -XGET http://127.0.0.1:8889/v1/get/invalid/json+json | jq
+{
+  "path": "/invalid/json",
+  "state": "OK",
+  "error": "JSON parsing failure: invalid character 'i' looking for beginning of value",
+  "zkstat": {
+    "Czxid": 45,
+    "Mzxid": 56,
+    "Ctime": 1564645641612,
+    "Mtime": 1564646350753,
+    "Version": 7,
+    "Cversion": 0,
+    "Aversion": 0,
+    "EphemeralOwner": 0,
+    "DataLength": 17,
+    "NumChildren": 0,
+    "Pzxid": 45
+  },
   "data": null
 }
 ```
@@ -230,11 +291,11 @@ go build -compile gccgo
 
 #### Binary file
 
-Build binary file
+Build binary with the Docker
 ```
 git clone https://github.com/Difrex/zoorest.git
 cd zoorest
-./build.sh
+./build.sh docker-binary
 ```
 Result binary file will be placed in out/ dir
 
@@ -244,7 +305,7 @@ Build Alpine based docker image
 ```
 git clone https://github.com/Difrex/zoorest.git
 cd zoorest
-./build.sh alpine
+./build.sh docker
 ```
 
 Image will be tagged as zoorest:latest
@@ -265,7 +326,7 @@ And run it
 
 Denis Zheleztsov <difrex.punk@gmail.com>
 
-# LICENSE 
+# LICENSE
 
 GPLv3 see [LICENSE](LICENSE)
 

@@ -2,13 +2,14 @@ package rest
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
-	"github.com/samuel/go-zookeeper/zk"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/samuel/go-zookeeper/zk"
 )
 
 // Ls ...
@@ -29,14 +30,16 @@ type Get struct {
 	Data   []byte   `json:"data"`
 }
 
+type GetJSON struct {
+	Path   string      `json:"path"`
+	State  string      `json:"state"`
+	Error  string      `json:"error"`
+	ZkStat *zk.Stat    `json:"zkstat"`
+	Data   interface{} `json:"data"`
+}
+
 // LS ...
 func (zk ZooNode) LS(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		e := strings.Join([]string{"Method", r.Method, "not alowed"}, " ")
-		w.WriteHeader(500)
-		w.Write([]byte(e))
-		return
-	}
 	vars := mux.Vars(r)
 	path := vars["path"]
 
@@ -108,12 +111,6 @@ func (zk ZooNode) UP(w http.ResponseWriter, r *http.Request) {
 
 // RM ...
 func (zk ZooNode) RM(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "DELETE" {
-		e := strings.Join([]string{"Method", r.Method, "not alowed"}, " ")
-		w.WriteHeader(500)
-		w.Write([]byte(e))
-		return
-	}
 	vars := mux.Vars(r)
 	path := vars["path"]
 
@@ -139,12 +136,6 @@ func (zk ZooNode) RM(w http.ResponseWriter, r *http.Request) {
 
 // GET ...
 func (zk ZooNode) GET(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		e := strings.Join([]string{"Method", r.Method, "not alowed"}, " ")
-		w.WriteHeader(500)
-		w.Write([]byte(e))
-		return
-	}
 	vars := mux.Vars(r)
 	path := vars["path"]
 
@@ -170,14 +161,62 @@ func (zk ZooNode) GET(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
+// GetJSON marshals the node data to the JSON
+func (zk ZooNode) GetJSON(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	path := vars["path"]
+
+	ch := make(chan Get)
+
+	go func() { ch <- zk.GetNode(path) }()
+
+	childrens := <-ch
+	data, err := json.Marshal(childrens)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte("JSON parsing failure"))
+		return
+	}
+
+	if childrens.Error != "" {
+		w.WriteHeader(500)
+		w.Write(data)
+		return
+	}
+
+	dataJson, err := unmarhalNodeData(childrens.Data)
+	if err != nil {
+		w.WriteHeader(500)
+		childrens.Error = "JSON parsing failure: " + err.Error()
+		w.Write(errorUnmarshal(childrens))
+		return
+	}
+
+	getJson := GetJSON{
+		Path:   childrens.Path,
+		Error:  childrens.Error,
+		State:  childrens.State,
+		ZkStat: childrens.ZkStat,
+		Data:   dataJson,
+	}
+	if data, err := json.Marshal(getJson); err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(err.Error()))
+	} else {
+		w.WriteHeader(200)
+		w.Write(data)
+	}
+}
+
 // Serve ...
 func Serve(listen string, zk ZooNode) {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/v1/ls{path:[A-Za-z0-9-_/.:]+}", zk.LS)
-	r.HandleFunc("/v1/get{path:[A-Za-z0-9-_/.:]+}", zk.GET)
-	r.HandleFunc("/v1/rmr{path:[A-Za-z0-9-_/.:]+}", zk.RM)
-	r.HandleFunc("/v1/up{path:[A-Za-z0-9-_/.:]+}", zk.UP)
+	r.HandleFunc("/v1/ls{path:[A-Za-z0-9-_/.:]+}", zk.LS).Methods("GET")
+	r.HandleFunc("/v1/get{path:[A-Za-z0-9-_/.:]+}", zk.GET).Methods("GET")
+	r.HandleFunc("/v1/get{path:[A-Za-z0-9-_/.:]+}+json", zk.GetJSON).Methods("GET")
+	r.HandleFunc("/v1/rmr{path:[A-Za-z0-9-_/.:]+}", zk.RM).Methods("DELETE")
+	r.HandleFunc("/v1/up{path:[A-Za-z0-9-_/.:]+}", zk.UP).Methods("PUT", "POST", "PATCH")
 
 	http.Handle("/", r)
 
@@ -190,4 +229,23 @@ func Serve(listen string, zk ZooNode) {
 
 	log.Print("Listening API on ", listen)
 	log.Fatal(srv.ListenAndServe())
+}
+
+func unmarhalNodeData(data []byte) (interface{}, error) {
+	var content interface{}
+	err := json.Unmarshal(data, &content)
+	if err != nil {
+		return nil, err
+	}
+
+	return content, nil
+}
+
+func errorUnmarshal(get Get) []byte {
+	get.Data = nil
+	data, err := json.Marshal(get)
+	if err != nil {
+		return nil
+	}
+	return data
 }
