@@ -212,7 +212,7 @@ func (zk ZooNode) GetJSON(w http.ResponseWriter, r *http.Request) {
 func Serve(listen string, zk ZooNode) {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/v1/ls{path:[A-Za-z0-9-_/.:]+}", zk.LS).Methods("GET")
+	r.HandleFunc("/v1/ls{path:[A-Za-z0-9-_/.:]+}", zk.LS).Methods("GET", "LIST")
 	r.HandleFunc("/v1/get{path:[A-Za-z0-9-_/.:]+}", zk.GET).Methods("GET")
 	r.HandleFunc("/v1/get{path:[A-Za-z0-9-_/.:]+}+json", zk.GetJSON).Methods("GET")
 	r.HandleFunc("/v1/rmr{path:[A-Za-z0-9-_/.:]+}", zk.RM).Methods("DELETE")
@@ -243,6 +243,7 @@ func unmarhalNodeData(data []byte) (interface{}, error) {
 
 func errorUnmarshal(get Get) []byte {
 	get.Data = nil
+	get.State = "ERROR"
 	data, err := json.Marshal(get)
 	if err != nil {
 		return nil

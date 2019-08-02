@@ -53,7 +53,7 @@ Usage of ./zoorest:
 
 NOTE: If memcached support is enabled zkStat metrics will not be returned.
 
-Tupical usage scheme:
+Typical usage scheme:
 
 [![tupical usage](img/usage.png)](img/usage.png)
 
@@ -166,7 +166,7 @@ curl -s -XGET http://127.0.0.1:8889/v1/json/one/data+json | jq
 curl -s -XGET http://127.0.0.1:8889/v1/get/invalid/json+json | jq
 {
   "path": "/invalid/json",
-  "state": "OK",
+  "state": "ERROR",
   "error": "JSON parsing failure: invalid character 'i' looking for beginning of value",
   "zkstat": {
     "Czxid": 45,
