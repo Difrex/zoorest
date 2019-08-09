@@ -7,7 +7,7 @@ Zookeeper REST API
 
 - [Zoorest](#zoorest)
     - [Usage](#usage)
-    - [API](#api)
+    - [API v1](#api-v1)
         - [List node childrens](#list-node-childrens)
             - [Errors](#errors)
         - [Get node data](#get-node-data)
@@ -20,7 +20,20 @@ Zookeeper REST API
         - [Update node](#update-node)
             - [Errors](#errors-4)
         - [Delete node recursive](#delete-node-recursive)
+    - [API v2](#api-v2)
+        - [List node childrens](#list-node-childrens-1)
             - [Errors](#errors-5)
+        - [Get node data](#get-node-data-1)
+            - [Errors](#errors-6)
+        - [Get node data as JSON](#get-node-data-as-json-1)
+            - [Errors](#errors-7)
+        - [Create node recursive](#create-node-recursive-1)
+        - [Create node children](#create-node-children-1)
+            - [Errors](#errors-8)
+        - [Update node](#update-node-1)
+            - [Errors](#errors-9)
+        - [Delete node recursive](#delete-node-recursive-1)
+            - [Errors](#errors-10)
     - [Build](#build)
         - [Binary](#binary)
         - [Docker build](#docker-build)
@@ -57,7 +70,7 @@ Typical usage scheme:
 
 [![tupical usage](img/usage.png)](img/usage.png)
 
-## API
+## API v1
 
 ### List node childrens
 
@@ -246,9 +259,186 @@ curl -XDELETE http://127.0.0.1:8889/v1/rmr/two
 /zoorest/two
 ```
 
+## API v2
+
+### List node childrens
+
+Method: **LIST**
+
+Return JSON
+```json
+curl -s -XGET http://127.0.0.1:8889/v2/ | jq
+{
+  "childrens": [
+    "two",
+    "three",
+    "one"
+  ],
+  "path": "/zoorest",
+  "state": "OK",
+  "error": ""
+}
+```
+
+#### Errors
+
+```json
+curl -s -XGET http://127.0.0.1:8889/v2/does/not/exist | jq
+{
+  "childrens": null,
+  "path": "",
+  "state": "ERROR",
+  "error": "zk: node does not exist"
+}
+```
+
+### Get node data
+
+Method: **GET**
+
+Return JSON
+```
+curl -s -XGET http://127.0.0.1:8889/v2/one/data | jq
+{
+  "path": "/zoorest/one/data",
+  "state": "OK",
+  "error": "",
+  "data": "eyJzb21lIjogImpzb24ifQ=="
+}
+```
+Node data stored in *data* field as base64 encoded string
+```
+echo eyJzb21lIjogImpzb24ifQ== | base64 -d
+{"some": "json"}
+```
+
+#### Errors
+
+```json
+ curl -s -XGET http://127.0.0.1:8889/v2/does/not/exist | jq
+{
+  "path": "",
+  "state": "ERROR",
+  "error": "zk: node does not exist",
+  "data": null
+}
+```
+
+### Get node data as JSON
+
+Method: **GET**
+
+Location: **/v2/path/to/node+json**
+
+Simple add to the end of the path `+json`
+Return JSON
+```
+curl -s -XGET http://127.0.0.1:8889/v2/json/one/data+json | jq
+{
+  "path": "/json/one/data",
+  "state": "OK",
+  "error": "",
+  "zkstat": {
+    "Czxid": 45,
+    "Mzxid": 55,
+    "Ctime": 1564645641612,
+    "Mtime": 1564646317882,
+    "Version": 6,
+    "Cversion": 0,
+    "Aversion": 0,
+    "EphemeralOwner": 0,
+    "DataLength": 28,
+    "NumChildren": 0,
+    "Pzxid": 45
+  },
+  "data": {
+    "ok": true,
+    "some": "data"
+  }
+}
+```
+
+#### Errors
+
+```json
+curl -s -XGET http://127.0.0.1:8889/v2/invalid/json+json | jq
+{
+  "path": "/invalid/json",
+  "state": "ERROR",
+  "error": "JSON parsing failure: invalid character 'i' looking for beginning of value",
+  "zkstat": {
+    "Czxid": 45,
+    "Mzxid": 56,
+    "Ctime": 1564645641612,
+    "Mtime": 1564646350753,
+    "Version": 7,
+    "Cversion": 0,
+    "Aversion": 0,
+    "EphemeralOwner": 0,
+    "DataLength": 17,
+    "NumChildren": 0,
+    "Pzxid": 45
+  },
+  "data": null
+}
+```
+
+### Create node recursive
+
+Method: **PUT**
+
+Return string with created path
+```
+curl -XPUT http://127.0.0.1:8889/v2/two/three/four -d '{"four": "json"}'
+/zoorest/two/three/four
+```
+
+### Create node children
+
+Method: **PATCH**
+
+Return string with created children path
+```
+curl -XPATCH http://127.0.0.1:8889/v2/one/test -d 'test'
+/one/test
+```
+
+#### Errors
+
+```
+curl -XPATCH http://127.0.0.1:8889/v2/six/test -d '{"six": "json"}'
+zk: node does not exist
+```
+
+### Update node
+
+Method: **POST**
+
+Return string with updated path
+```
+curl -XPOST http://127.0.0.1:8889/v2/two -d '{"two": "json"}'
+/zoorest/two
+```
+
+#### Errors
+
+```
+curl -XPOST http://127.0.0.1:8889/v2/twa -d '{"two": "json"}'
+zk: node does not exist
+```
+
+### Delete node recursive
+Method: **DELETE**
+
+Return string with removed path
+```
+curl -XDELETE http://127.0.0.1:8889/v2/two
+/zoorest/two
+```
+
 #### Errors
 ```
-curl -XPOST http://127.0.0.1:8889/v1/rmr/two
+curl -XPOST http://127.0.0.1:8889/v2/two
 Method POST not alowed
 ```
 
