@@ -212,11 +212,19 @@ func (zk ZooNode) GetJSON(w http.ResponseWriter, r *http.Request) {
 func Serve(listen string, zk ZooNode) {
 	r := mux.NewRouter()
 
+	// API v1
 	r.HandleFunc("/v1/ls{path:[A-Za-z0-9-_/.:]+}", zk.LS).Methods("GET", "LIST")
 	r.HandleFunc("/v1/get{path:[A-Za-z0-9-_/.:]+}", zk.GET).Methods("GET")
 	r.HandleFunc("/v1/get{path:[A-Za-z0-9-_/.:]+}+json", zk.GetJSON).Methods("GET")
 	r.HandleFunc("/v1/rmr{path:[A-Za-z0-9-_/.:]+}", zk.RM).Methods("DELETE")
 	r.HandleFunc("/v1/up{path:[A-Za-z0-9-_/.:]+}", zk.UP).Methods("PUT", "POST", "PATCH")
+
+	// API v2
+	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.LS).Methods("LIST")
+	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.GET).Methods("GET")
+	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}+json", zk.GetJSON).Methods("GET")
+	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.RM).Methods("DELETE")
+	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.UP).Methods("PUT", "POST", "PATCH")
 
 	http.Handle("/", r)
 
