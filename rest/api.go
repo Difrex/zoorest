@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/samuel/go-zookeeper/zk"
 )
 
@@ -226,10 +227,19 @@ func Serve(listen string, zk ZooNode) {
 	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.RM).Methods("DELETE")
 	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.UP).Methods("PUT", "POST", "PATCH")
 
-	http.Handle("/", r)
+	c := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "LIST", "DELETE", "PUT", "POST", "PATCH"},
+
+		// Enable Debugging for testing, consider disabling in production
+		Debug: true,
+	})
+
+	handler := c.Handler(r)
+
+	http.Handle("/", handler)
 
 	srv := http.Server{
-		Handler:      r,
+		Handler:      handler,
 		Addr:         listen,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
