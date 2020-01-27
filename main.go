@@ -3,7 +3,14 @@ package main
 import (
 	"flag"
 	"github.com/Difrex/zoorest/rest"
+	"os"
 	"strings"
+)
+
+const (
+	CorsFeatureEnableEnvVar string = `ZOOREST_CORS_ENABLE`
+	CorsDebugModeEnvVar     string = `ZOOREST_CORS_DEBUG_ENABLE`
+	CorsAllowedOrigins      string = `ZOOREST_CORS_ALLOWED_ORIGINS`
 )
 
 var (
@@ -13,6 +20,7 @@ var (
 	mc       bool
 	mcHosts  string
 	mcPrefix string
+	ok       bool
 )
 
 // init ...
@@ -49,7 +57,34 @@ func main() {
 
 	zoo.MC = MC
 
-	rest.Serve(listen, zoo)
+	// get CORS settins from environment
+	// start by establishing defaults.
+	var cors = rest.CorsOptions{
+		Enabled:        false,
+		DebugEnabled:   false,
+		AllowedOrigins: []string{"*"},
+	}
+
+	var corsEnabled string
+	var ok bool
+	corsEnabled, ok = os.LookupEnv(CorsFeatureEnableEnvVar)
+	if ok && corsEnabled != "" {
+		cors.Enabled = true
+	}
+
+	var corsDebugEnabled string
+	corsDebugEnabled, ok = os.LookupEnv(CorsDebugModeEnvVar)
+	if ok && corsDebugEnabled != "" {
+		cors.DebugEnabled = true
+	}
+
+	var corsAllowedOrigins string
+	corsAllowedOrigins, ok = os.LookupEnv(CorsAllowedOrigins)
+	if ok && corsAllowedOrigins != "" {
+		cors.AllowedOrigins = strings.Split(corsAllowedOrigins, ",")
+	}
+
+	rest.Serve(listen, zoo, cors)
 }
 
 // getSlice returm slice
