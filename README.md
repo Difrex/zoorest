@@ -7,6 +7,7 @@ Zookeeper REST API
 
 - [Zoorest](#zoorest)
     - [Usage](#usage)
+    - [CORS](#cors)
     - [API v1](#api-v1)
         - [List node childrens](#list-node-childrens)
             - [Errors](#errors)
@@ -69,6 +70,21 @@ NOTE: If memcached support is enabled zkStat metrics will not be returned.
 Typical usage scheme:
 
 [![tupical usage](img/usage.png)](img/usage.png)
+
+### CORS
+`Cross-origin resource sharing` is a feature that securely allows access to a zoorest instance from a web browser.   This is an optional feature and is disabled by default.  It is enabled and configured via OS environment variables.
+
+**ZOOREST_CORS_ENABLE**
+    enable the feature.  Any non-empty value is considered "true" and enables it.
+    **default:  false**
+
+**ZOOREST_CORS_DEBUG_ENABLE**
+    enable CORS debug mode Any non-null value is considered "true" and enables it.
+    **default: false**
+
+**ZOOREST_CORS_ALLOWED_ORIGINS**
+    comma delimited list of origin url patterns to allow access to the service.
+    **default: \***    (any origin)
 
 ## API v1
 

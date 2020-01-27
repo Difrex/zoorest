@@ -39,6 +39,12 @@ type GetJSON struct {
 	Data   interface{} `json:"data"`
 }
 
+type CorsOptions struct {
+	Enabled        bool
+	DebugEnabled   bool
+	AllowedOrigins []string
+}
+
 // LS ...
 func (zk ZooNode) LS(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -210,7 +216,7 @@ func (zk ZooNode) GetJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 // Serve ...
-func Serve(listen string, zk ZooNode) {
+func Serve(listen string, zk ZooNode, cors_options CorsOptions) {
 	r := mux.NewRouter()
 
 	// API v1
@@ -227,16 +233,22 @@ func Serve(listen string, zk ZooNode) {
 	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.RM).Methods("DELETE")
 	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.UP).Methods("PUT", "POST", "PATCH")
 
-	c := cors.New(cors.Options{
-		AllowedMethods: []string{"GET", "LIST", "DELETE", "PUT", "POST", "PATCH"},
+	var handler http.Handler
 
-		// Enable Debugging for testing, consider disabling in production
-		Debug: true,
-	})
+	if cors_options.Enabled {
+		c := cors.New(cors.Options{
+			AllowedMethods: []string{"GET", "LIST", "DELETE", "PUT", "POST", "PATCH"},
+			AllowedOrigins: cors_options.AllowedOrigins,
+			// Enable Debugging for testing, consider disabling in production
+			Debug: cors_options.DebugEnabled,
+		})
 
-	handler := c.Handler(r)
-
-	http.Handle("/", handler)
+		// decorate with cors handler
+		handler = c.Handler(r)
+	} else {
+		// default to no
+		handler = r
+	}
 
 	srv := http.Server{
 		Handler:      handler,
