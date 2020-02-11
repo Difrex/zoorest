@@ -220,18 +220,18 @@ func Serve(listen string, zk ZooNode, cors_options CorsOptions) {
 	r := mux.NewRouter()
 
 	// API v1
-	r.HandleFunc("/v1/ls{path:[A-Za-z0-9-_/.:]+}", zk.LS).Methods("GET", "LIST")
-	r.HandleFunc("/v1/get{path:[A-Za-z0-9-_/.:]+}", zk.GET).Methods("GET")
-	r.HandleFunc("/v1/get{path:[A-Za-z0-9-_/.:]+}+json", zk.GetJSON).Methods("GET")
-	r.HandleFunc("/v1/rmr{path:[A-Za-z0-9-_/.:]+}", zk.RM).Methods("DELETE")
-	r.HandleFunc("/v1/up{path:[A-Za-z0-9-_/.:]+}", zk.UP).Methods("PUT", "POST", "PATCH")
+	r.HandleFunc("/v1/ls{path:[[:print:]]+}", zk.LS).Methods("GET", "LIST")
+	r.HandleFunc("/v1/get{path:[[:print:]]+}", zk.GET).Methods("GET")
+	r.HandleFunc("/v1/get{path:[[:print:]]+}+json", zk.GetJSON).Methods("GET")
+	r.HandleFunc("/v1/rmr{path:[[:print:]]+}", zk.RM).Methods("DELETE")
+	r.HandleFunc("/v1/up{path:[[:print:]]+}", zk.UP).Methods("PUT", "POST", "PATCH")
 
 	// API v2
-	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.LS).Methods("LIST")
-	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.GET).Methods("GET")
-	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}+json", zk.GetJSON).Methods("GET")
-	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.RM).Methods("DELETE")
-	r.HandleFunc("/v2{path:[A-Za-z0-9-_/.:]+}", zk.UP).Methods("PUT", "POST", "PATCH")
+	r.HandleFunc("/v2{path:[[:print:]]+}", zk.LS).Methods("LIST")
+	r.HandleFunc("/v2{path:[[:print:]]+}", zk.GET).Methods("GET")
+	r.HandleFunc("/v2{path:[[:print:]]+}+json", zk.GetJSON).Methods("GET")
+	r.HandleFunc("/v2{path:[[:print:]]+}", zk.RM).Methods("DELETE")
+	r.HandleFunc("/v2{path:[[:print:]]+}", zk.UP).Methods("PUT", "POST", "PATCH")
 
 	var handler http.Handler
 
